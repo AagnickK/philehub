@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhileHub - Secure File Sharing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --card-bg: #ffffff;
+            --drop-zone-bg: #f8f9fa;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #adb5bd;
+            --border-color: #495057;
+            --card-bg: #2d2d2d;
+            --drop-zone-bg: #343a40;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        .card-body, .card-title, .text-muted {
+            color: var(--text-primary) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--drop-zone-bg);
+        }
+        
+        .drop-zone:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+        
+        .drop-zone.dragover {
+            border-color: #007bff;
+            background: rgba(0,123,255,0.1);
+            transform: scale(1.02);
+        }
+        
+        .file-item {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+        }
+        
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.4);
+        }
+        
+        .hero-title {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <button class="btn btn-outline-primary theme-toggle" onclick="toggleTheme()">
+        <i id="themeIcon">🌙</i>
+    </button>
+    
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center mb-4 hero-title">PhileHub</h1>
+                <p class="text-center text-muted mb-4">Beautiful & Simple File Sharing</p>
+                
+                <ul class="nav nav-pills nav-justified mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showPage('files')">📁 Files</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showPage('about')">👨‍💻 About</a>
+                    </li>
+                </ul>
+
+                <!-- Files Page -->
+                <div id="filesPage">
+                    <!-- Upload Area -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">📤 Upload Files</h5>
+                            <div id="dropZone" class="drop-zone">
+                                <div class="mb-3">
+                                    <i style="font-size: 3rem;">📁</i>
+                                </div>
+                                <p class="mb-2 fw-bold">Drag & drop files here or click to select</p>
+                                <small class="text-muted">Max 10MB per file • All formats supported</small>
+                                <input type="file" id="fileInput" class="d-none" multiple>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Files List -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📋 Uploaded Files</h5>
+                            <div id="filesList"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- About Page -->
+                <div id="aboutPage" class="d-none">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <img src="https://lh3.googleusercontent.com/a/ACg8ocKDKwpcTOvXrTtjq77DDLh9KzD7O_TRvw0UIVRmhmy5Z59ZIzVQ=s360-c-no" alt="Creator" class="rounded-circle mb-3" width="120" height="120">
+                                <h3>Aagnick Naha</h3>
+                                <p class="text-muted">Tech Enthusiast</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>About PhileHub</h5>
+                                <p>A beautiful, minimal file sharing application built with modern web technologies. Designed for simplicity and ease of use.</p>
+                            </div>
+                            
+                            <div class="social-links">
+                                <a href="https://github.com/AagnickK" target="_blank" title="GitHub">
+                                    <i><img src="https://imgs.search.brave.com/fj_lrrkd7ZkAyLsU_-3-gp1khUd1rt1cSeqK5Id5OPI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/aGFzaG5vZGUuY29t/L3Jlcy9oYXNobm9k/ZS9pbWFnZS91cGxv/YWQvdjE2NTQ4NDU3/Njc2MTcvUnVIT0pE/YVZQSi5wbmc" alt="GitHub" width="24" height="24"></i>
+                                </a>
+                                <a href="https://linkedin.com/in/aagnicknaha" target="_blank" title="LinkedIn">
+                                    <i><img src="https://imgs.search.brave.com/UywpQZE8-JVNSQYMqh-O5Ymsgvezx_FXJB5oZ4mv2Qc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/ZnJlZXBuZ2xvZ29z/LmNvbS91cGxvYWRz/L2xpbmtlZGluLWxv/Z28tZGVzaWduLTMw/LnBuZw" alt="LinkedIn" width="24" height="24"></i>
+                                </a>
+                                <a href="https://instagram.com/aagnickk" target="_blank" title="Instagram">
+                                    <i><img src="https://imgs.search.brave.com/Ld-D9axxy4ygFeNIAiHJsLl-IVhYe3a08YvUNvy6uFs/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2UwL2Nl/LzIxL2UwY2UyMTZj/ZTNiNDY4MWY3YzE4/NzY3YTcwYTFlMTg2/LmpwZw" alt="Instagram" width="24" height="24"></i>
+                                </a>
+                                <a href="mailto:aagnicknaha@gmail.com" title="Email">
+                                    <i><img src="https://imgs.search.brave.com/qXYOVcD_2_Ht1zJG5lV0SBALfUgRJqypkS8t_0Ubms4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzhiLzU0/LzJiLzhiNTQyYjA4/NjQzMzAzMmQ4MmU4/YmMwODJkYWI0ZTI1/LmpwZw" alt="aagnicknaha@gmail.com" width="24" height="24"></i>
+                                </a>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <small class="text-muted">Made with ❤️ using Node.js & Bootstrap</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div id="alertContainer" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
